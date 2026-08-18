@@ -1,0 +1,20 @@
+{
+  "🔥 Cycling Trend": [
+    {"name": "CYCLING NEWS", "url": "https://www.cyclingnews.com/rss/", "site": "https://www.cyclingnews.com/"},
+    {"name": "Bicycle Retailer", "url": "https://www.bicycleretailer.com/rss.xml", "site": "https://www.bicycleretailer.com/"},
+    {"name": "Bike Radar News", "url": "https://feeds.purplemanager.com/193c804a-a673-47bd-b09b-11baf4822a17/bikeradar-news"}
+
+  ],
+  "🌏 國際商務 (中文)": [
+    {"name": "中央社國際", "url": "https://feeds.feedburner.com/rsscna/intworld", "site": "https://www.cna.com.tw/"},
+    {"name": "中央社財經", "url": "https://feeds.feedburner.com/rsscna/finance", "site": "https://www.cna.com.tw/"},
+    {"name": "經濟日報", "url": "https://money.udn.com/rssfeed/news/1001/5588", "site": "https://money.udn.com/"}
+  ],
+  "🇺🇸 English News (Global)": [
+    {"name": "BBC World", "url": "http://feeds.bbci.co.uk/news/world/rss.xml", "site": "https://www.bbc.com/news/world"},
+    {"name": "CNN Top", "url": "http://rss.cnn.com/rss/edition.rss", "site": "https://edition.cnn.com/"},
+    {"name": "MarketWatch", "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories", "site": "https://www.marketwatch.com/"},
+    {"name": "NY Times", "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", "site": "https://www.nytimes.com/section/world"},
+    {"name": "The Guardian", "url": "https://www.theguardian.com/world/rss", "site": "https://www.theguardian.com/world"}
+  ]
+}
