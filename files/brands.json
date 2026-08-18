@@ -1,0 +1,10 @@
+[
+  {"name": "Giant", "aliases": ["捷安特"]},
+  {"name": "Trek", "aliases": []},
+  {"name": "Merida", "aliases": ["美利達"]},
+  {"name": "Specialized", "aliases": ["閃電"]},
+  {"name": "Canyon", "aliases": []},
+  {"name": "Cannondale", "aliases": []},
+  {"name": "SRAM", "aliases": ["速聯"]},
+  {"name": "Shimano", "aliases": ["島野"]}
+]

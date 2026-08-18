@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike War Room</title>
+    <style>
+        :root {
+            --bg-color: #DCE9F5;
+            --card-bg: #FFFFFF;
+            --accent-color: #005EB8;
+            --text-main: #3B4559;
+            --text-muted: #767D8B;
+            --border-color: #99BFE3;
+            --hover-color: #004680;
+            --star-color: #FFC72C;
+            --error-color: #FF6A39;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 24px;
+            line-height: 1.5;
+            transition: padding-left 0.3s ease;
+        }
+        body.sidebar-open {
+            padding-left: 344px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .update-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: rgba(0, 94, 184, 0.07);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        .sidebar-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .sidebar-toggle-btn:hover {
+            background: var(--hover-color);
+            border-color: var(--hover-color);
+            color: #FFFFFF;
+        }
+        #savedCountBadge {
+            background: var(--star-color);
+            color: #3B4559;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 1px 8px;
+            font-size: 0.75rem;
+        }
+        .brand-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0 32px;
+        }
+        .brand-filter-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+        .brand-filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .brand-filter-btn:hover {
+            border-color: var(--accent-color);
+        }
+        .brand-filter-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #FFFFFF;
+        }
+        .brand-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .brand-tag {
+            font-size: 0.68rem;
+            background: rgba(0, 94, 184, 0.10);
+            color: var(--accent-color);
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .category-section {
+            margin-bottom: 40px;
+        }
+        .category-title {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 6px -1px rgba(0, 70, 128, 0.07);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -6px rgba(0, 70, 128, 0.14);
+        }
+        .card-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .card-header a.source-link {
+            color: inherit;
+            text-decoration: none;
+        }
+        .card-header a.source-link:hover {
+            text-decoration: underline;
+        }
+        .news-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .news-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .news-item-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .news-item a {
+            flex: 1;
+            min-width: 0;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.92rem;
+            display: block;
+            transition: color 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .news-item a:hover {
+            color: var(--accent-color);
+        }
+        .also-from {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            padding-left: 2px;
+            cursor: help;
+        }
+        .pub-time {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            padding-left: 2px;
+        }
+        .save-btn {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1;
+            padding: 2px 4px;
+            transition: color 0.15s, transform 0.15s;
+        }
+        .save-btn:hover {
+            transform: scale(1.2);
+        }
+        .save-btn.saved {
+            color: var(--star-color);
+        }
+        .error-tag {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* ---- 收藏側邊欄 ---- */
+        #savedSidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100vh;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 16px rgba(0, 70, 128, 0.10);
+        }
+        body.sidebar-open #savedSidebar {
+            transform: translateX(0);
+        }
+        .sidebar-header {
+            padding: 18px 16px 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-header h2 {
+            font-size: 1.1rem;
+            color: var(--star-color);
+        }
+        .sidebar-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        #savedList {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .saved-item {
+            background: rgba(0, 94, 184, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .saved-item-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .saved-item-title {
+            display: block;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            text-decoration: none;
+            margin-bottom: 6px;
+        }
+        .saved-item-title:hover {
+            color: var(--accent-color);
+        }
+        .remove-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--error-color);
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .remove-btn:hover {
+            background: rgba(255, 106, 57, 0.08);
+        }
+        .empty-hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 30px;
+            line-height: 1.8;
+        }
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+        }
+        .export-btn {
+            width: 100%;
+            background: var(--accent-color);
+            color: #FFFFFF;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .export-btn:hover {
+            background: var(--hover-color);
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 收藏側邊欄 -->
+    <aside id="savedSidebar">
+        <div class="sidebar-header">
+            <h2>⭐ 我的收藏</h2>
+            <button class="sidebar-close-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div id="savedList"></div>
+        <div class="sidebar-footer">
+            <button class="export-btn" onclick="exportSaved()">匯出收藏 (JSON)</button>
+        </div>
+    </aside>
+
+    <header>
+        <h1>🚴 Bike War Room</h1>
+        <div class="header-right">
+            <div class="update-time">最後更新：{{ now_str }}</div>
+            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+                ⭐ 收藏 <span id="savedCountBadge">0</span>
+            </button>
+        </div>
+    </header>
+
+    {% if brand_names %}
+    <div class="brand-filter-bar">
+        <span class="brand-filter-label">品牌篩選：</span>
+        <button class="brand-filter-btn active" data-brand="all" onclick="filterByBrand('all')">全部</button>
+        {% for brand in brand_names %}
+        <button class="brand-filter-btn" data-brand="{{ brand }}" onclick="filterByBrand('{{ brand }}')">{{ brand }}</button>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main>
+    {% for category, sources in data.items() %}
+        <section class="category-section">
+            <h2 class="category-title">{{ category }}</h2>
+            <div class="grid">
+            {% for source in sources %}
+                <div class="card">
+                    <div class="card-header">
+                        {% if source.site %}
+                        <a href="{{ source.site }}" target="_blank" rel="noopener" class="source-link">{{ source.source_name }}</a>
+                        {% else %}
+                        {{ source.source_name }}
+                        {% endif %}
+                    </div>
+                    <ul class="news-list">
+                    {% if source.error %}
+                        <li class="error-tag">抓取失敗 (請檢查網絡或來源)</li>
+                    {% elif not source['items'] %}
+                        <li class="error-tag">無最新新聞資料</li>
+                    {% else %}
+                        {% for item in source['items'] %}
+                        <li class="news-item" data-title="{{ item.title }}" data-link="{{ item.link }}" data-source="{{ source.source_name }}" data-category="{{ category }}" data-brands="{{ item.brands|join(',') if item.brands else '' }}">
+                            <div class="news-item-row">
+                                <a href="{{ item.link }}" target="_blank" title="{{ item.title }}">• {{ item.title }}</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            {% if item.relative_time %}
+                            <div class="pub-time">🕐 {{ item.relative_time }}</div>
+                            {% endif %}
+                            {% if item.brands %}
+                            <div class="brand-tags">
+                                {% for b in item.brands %}
+                                <span class="brand-tag">{{ b }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if item.also_from %}
+                            <div class="also-from" title="同時也見於：{{ item.also_from|join('、') }}">🔗 另有 {{ item.also_from|length }} 個來源同步報導</div>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    {% endif %}
+                    </ul>
+                </div>
+            {% endfor %}
+            </div>
+        </section>
+    {% endfor %}
+    </main>
+
+    <footer>
+        <p>Generated by Python Automation Script</p>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = 'newsDashboard_savedNews';
+
+        function getSavedNews() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setSavedNews(arr) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        }
+
+        function isNewsSaved(link) {
+            return getSavedNews().some(n => n.link === link);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        function toggleSave(btn) {
+            const li = btn.closest('.news-item');
+            const link = li.dataset.link;
+            const title = li.dataset.title;
+            const source = li.dataset.source;
+            const category = li.dataset.category;
+
+            let saved = getSavedNews();
+            const idx = saved.findIndex(n => n.link === link);
+
+            if (idx >= 0) {
+                saved.splice(idx, 1);
+                btn.textContent = '☆';
+                btn.classList.remove('saved');
+            } else {
+                saved.unshift({
+                    title: title,
+                    link: link,
+                    source: source,
+                    category: category,
+                    savedAt: new Date().toISOString()
+                });
+                btn.textContent = '★';
+                btn.classList.add('saved');
+            }
+
+            setSavedNews(saved);
+            renderSidebar();
+        }
+
+        function removeSaved(index) {
+            let saved = getSavedNews();
+            const removed = saved.splice(index, 1)[0];
+            setSavedNews(saved);
+            renderSidebar();
+
+            if (removed) {
+                document.querySelectorAll('.news-item').forEach(li => {
+                    if (li.dataset.link === removed.link) {
+                        const btn = li.querySelector('.save-btn');
+                        btn.textContent = '☆';
+                        btn.classList.remove('saved');
+                    }
+                });
+            }
+        }
+
+        function renderSidebar() {
+            const saved = getSavedNews();
+            const container = document.getElementById('savedList');
+            const badge = document.getElementById('savedCountBadge');
+            badge.textContent = saved.length;
+
+            if (saved.length === 0) {
+                container.innerHTML = '<p class="empty-hint">尚未儲存任何新聞<br>點擊新聞旁的 ☆ 即可收藏</p>';
+                return;
+            }
+
+            container.innerHTML = saved.map((n, i) => `
+                <div class="saved-item">
+                    <div class="saved-item-meta">${escapeHtml(n.source)} · ${escapeHtml(n.category)}</div>
+                    <a href="${n.link}" target="_blank" class="saved-item-title">${escapeHtml(n.title)}</a>
+                    <button class="remove-btn" onclick="removeSaved(${i})">移除</button>
+                </div>
+            `).join('');
+        }
+
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-open');
+        }
+
+        function filterByBrand(brand) {
+            document.querySelectorAll('.brand-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.brand === brand);
+            });
+
+            document.querySelectorAll('.card').forEach(card => {
+                let visibleCount = 0;
+
+                card.querySelectorAll('.news-item').forEach(li => {
+                    const brands = (li.dataset.brands || '').split(',').filter(Boolean);
+                    const show = (brand === 'all') || brands.includes(brand);
+                    li.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                });
+
+                const errorLi = card.querySelector('.error-tag');
+                if (errorLi) {
+                    errorLi.style.display = (brand === 'all') ? '' : 'none';
+                }
+
+                const cardHasContent = visibleCount > 0 || (errorLi && brand === 'all');
+                card.style.display = cardHasContent ? '' : 'none';
+            });
+
+            document.querySelectorAll('.category-section').forEach(section => {
+                const visibleCards = Array.from(section.querySelectorAll('.card'))
+                    .filter(c => c.style.display !== 'none');
+                section.style.display = visibleCards.length > 0 ? '' : 'none';
+            });
+        }
+
+        function exportSaved() {
+            const saved = getSavedNews();
+            const blob = new Blob([JSON.stringify(saved, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'saved_news_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.news-item').forEach(li => {
+                const link = li.dataset.link;
+                const btn = li.querySelector('.save-btn');
+                if (isNewsSaved(link)) {
+                    btn.textContent = '★';
+                    btn.classList.add('saved');
+                }
+            });
+            renderSidebar();
+        });
+    </script>
+
+</body>
+</html>
