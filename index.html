@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike War Room</title>
+    <style>
+        :root {
+            --bg-color: #DCE9F5;
+            --card-bg: #FFFFFF;
+            --accent-color: #005EB8;
+            --text-main: #3B4559;
+            --text-muted: #767D8B;
+            --border-color: #99BFE3;
+            --hover-color: #004680;
+            --star-color: #FFC72C;
+            --error-color: #FF6A39;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 24px;
+            line-height: 1.5;
+            transition: padding-left 0.3s ease;
+        }
+        body.sidebar-open {
+            padding-left: 344px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .update-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: rgba(0, 94, 184, 0.07);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        .sidebar-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .sidebar-toggle-btn:hover {
+            background: var(--hover-color);
+            border-color: var(--hover-color);
+            color: #FFFFFF;
+        }
+        #savedCountBadge {
+            background: var(--star-color);
+            color: #3B4559;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 1px 8px;
+            font-size: 0.75rem;
+        }
+        .brand-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0 32px;
+        }
+        .brand-filter-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+        .brand-filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .brand-filter-btn:hover {
+            border-color: var(--accent-color);
+        }
+        .brand-filter-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #FFFFFF;
+        }
+        .brand-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .brand-tag {
+            font-size: 0.68rem;
+            background: rgba(0, 94, 184, 0.10);
+            color: var(--accent-color);
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .category-section {
+            margin-bottom: 40px;
+        }
+        .category-title {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 6px -1px rgba(0, 70, 128, 0.07);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -6px rgba(0, 70, 128, 0.14);
+        }
+        .card-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .card-header a.source-link {
+            color: inherit;
+            text-decoration: none;
+        }
+        .card-header a.source-link:hover {
+            text-decoration: underline;
+        }
+        .news-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .news-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .news-item-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .news-item a {
+            flex: 1;
+            min-width: 0;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.92rem;
+            display: block;
+            transition: color 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .news-item a:hover {
+            color: var(--accent-color);
+        }
+        .also-from {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            padding-left: 2px;
+            cursor: help;
+        }
+        .pub-time {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            padding-left: 2px;
+        }
+        .save-btn {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1;
+            padding: 2px 4px;
+            transition: color 0.15s, transform 0.15s;
+        }
+        .save-btn:hover {
+            transform: scale(1.2);
+        }
+        .save-btn.saved {
+            color: var(--star-color);
+        }
+        .error-tag {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* ---- 收藏側邊欄 ---- */
+        #savedSidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100vh;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 16px rgba(0, 70, 128, 0.10);
+        }
+        body.sidebar-open #savedSidebar {
+            transform: translateX(0);
+        }
+        .sidebar-header {
+            padding: 18px 16px 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-header h2 {
+            font-size: 1.1rem;
+            color: var(--star-color);
+        }
+        .sidebar-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        #savedList {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .saved-item {
+            background: rgba(0, 94, 184, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .saved-item-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .saved-item-title {
+            display: block;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            text-decoration: none;
+            margin-bottom: 6px;
+        }
+        .saved-item-title:hover {
+            color: var(--accent-color);
+        }
+        .remove-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--error-color);
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .remove-btn:hover {
+            background: rgba(255, 106, 57, 0.08);
+        }
+        .empty-hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 30px;
+            line-height: 1.8;
+        }
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+        }
+        .export-btn {
+            width: 100%;
+            background: var(--accent-color);
+            color: #FFFFFF;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .export-btn:hover {
+            background: var(--hover-color);
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 收藏側邊欄 -->
+    <aside id="savedSidebar">
+        <div class="sidebar-header">
+            <h2>⭐ 我的收藏</h2>
+            <button class="sidebar-close-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div id="savedList"></div>
+        <div class="sidebar-footer">
+            <button class="export-btn" onclick="exportSaved()">匯出收藏 (JSON)</button>
+        </div>
+    </aside>
+
+    <header>
+        <h1>🚴 Bike War Room</h1>
+        <div class="header-right">
+            <div class="update-time">最後更新：2026-08-18 03:56:24</div>
+            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+                ⭐ 收藏 <span id="savedCountBadge">0</span>
+            </button>
+        </div>
+    </header>
+
+    
+    <div class="brand-filter-bar">
+        <span class="brand-filter-label">品牌篩選：</span>
+        <button class="brand-filter-btn active" data-brand="all" onclick="filterByBrand('all')">全部</button>
+        
+        <button class="brand-filter-btn" data-brand="Giant" onclick="filterByBrand('Giant')">Giant</button>
+        
+        <button class="brand-filter-btn" data-brand="Trek" onclick="filterByBrand('Trek')">Trek</button>
+        
+        <button class="brand-filter-btn" data-brand="Merida" onclick="filterByBrand('Merida')">Merida</button>
+        
+        <button class="brand-filter-btn" data-brand="Specialized" onclick="filterByBrand('Specialized')">Specialized</button>
+        
+        <button class="brand-filter-btn" data-brand="Canyon" onclick="filterByBrand('Canyon')">Canyon</button>
+        
+        <button class="brand-filter-btn" data-brand="Cannondale" onclick="filterByBrand('Cannondale')">Cannondale</button>
+        
+        <button class="brand-filter-btn" data-brand="SRAM" onclick="filterByBrand('SRAM')">SRAM</button>
+        
+        <button class="brand-filter-btn" data-brand="Shimano" onclick="filterByBrand('Shimano')">Shimano</button>
+        
+    </div>
+    
+
+    <main>
+    
+        <section class="category-section">
+            <h2 class="category-title">🔥 Cycling Trend</h2>
+            <div class="grid">
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.bicycleretailer.com/" target="_blank" rel="noopener" class="source-link">Bicycle Retailer</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Retailers, what is your e-bike service policy?" data-link="https://www.bicycleretailer.com/surveys/retailers-what-your-e-bike-service-policy" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/surveys/retailers-what-your-e-bike-service-policy" target="_blank" title="Retailers, what is your e-bike service policy?">• Retailers, what is your e-bike service policy?</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Garmin acquires TrainingPeaks, TrainHeroic platforms" data-link="https://www.bicycleretailer.com/industry-news/2026/07/22/garmin-acquires-trainingpeaks-trainheroic-platforms" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/industry-news/2026/07/22/garmin-acquires-trainingpeaks-trainheroic-platforms" target="_blank" title="Garmin acquires TrainingPeaks, TrainHeroic platforms">• Garmin acquires TrainingPeaks, TrainHeroic platforms</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 週前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Digital Corner: Attracting and keeping new riders with a digital assist" data-link="https://www.bicycleretailer.com/opinion-analysis/2026/07/13/digital-corner-attracting-and-keeping-new-riders-digital-assist" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/opinion-analysis/2026/07/13/digital-corner-attracting-and-keeping-new-riders-digital-assist" target="_blank" title="Digital Corner: Attracting and keeping new riders with a digital assist">• Digital Corner: Attracting and keeping new riders with a digital assist</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 週前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Retailers: Please take our first-half survey" data-link="https://www.bicycleretailer.com/retail-news/2026/07/02/retailers-please-take-our-first-half-survey" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/retail-news/2026/07/02/retailers-please-take-our-first-half-survey" target="_blank" title="Retailers: Please take our first-half survey">• Retailers: Please take our first-half survey</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 個月前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Retailers, are your 2026 sales to date up, down or even compared with last year?" data-link="https://www.bicycleretailer.com/surveys/retailers-are-your-2026-sales-date-down-or-even-compared-last-year" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/surveys/retailers-are-your-2026-sales-date-down-or-even-compared-last-year" target="_blank" title="Retailers, are your 2026 sales to date up, down or even compared with last year?">• Retailers, are your 2026 sales to date up, down or even compared with last year?</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 個月前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Eurobike shifts 2027 show to September" data-link="https://www.bicycleretailer.com/international/2026/05/20/eurobike-will-take-place-september-2027" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/international/2026/05/20/eurobike-will-take-place-september-2027" target="_blank" title="Eurobike shifts 2027 show to September">• Eurobike shifts 2027 show to September</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 個月前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Troxus Mobility Expands into Canada; Partners with Trailhead Axis Group" data-link="https://www.bicycleretailer.com/announcements/2026/05/15/troxus-mobility-expands-canada-partners-trailhead-axis-group" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/announcements/2026/05/15/troxus-mobility-expands-canada-partners-trailhead-axis-group" target="_blank" title="Troxus Mobility Expands into Canada; Partners with Trailhead Axis Group">• Troxus Mobility Expands into Canada; Partners with Trailhead Axis Group</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 個月前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Retailers, how important to your business are new riders?" data-link="https://www.bicycleretailer.com/surveys/retailers-how-important-your-business-are-new-riders" data-source="Bicycle Retailer" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bicycleretailer.com/surveys/retailers-how-important-your-business-are-new-riders" target="_blank" title="Retailers, how important to your business are new riders?">• Retailers, how important to your business are new riders?</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 個月前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.cyclingnews.com/" target="_blank" rel="noopener" class="source-link">CYCLING NEWS</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Mathieu van der Poel&#39;s 2026 mountain bike return confirmed with place on World Cup start list at Les Gets" data-link="https://www.cyclingnews.com/pro-cycling/racing/mathieu-van-der-poels-2026-mountain-bike-return-confirmed-with-place-on-world-cup-start-list-at-les-gets/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/racing/mathieu-van-der-poels-2026-mountain-bike-return-confirmed-with-place-on-world-cup-start-list-at-les-gets/" target="_blank" title="Mathieu van der Poel&#39;s 2026 mountain bike return confirmed with place on World Cup start list at Les Gets">• Mathieu van der Poel&#39;s 2026 mountain bike return confirmed with place on World Cup start list at Les Gets</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="American Criterium Cup: Aline Seitz holds off Skylar Schneider while Justin Williams earns men&#39;s sprint victory on tight circuit in Salt Lake City" data-link="https://www.cyclingnews.com/pro-cycling/racing/american-criterium-cup-aline-seitz-holds-off-skylar-schneider-while-justin-williams-earns-mens-sprint-victory-on-tight-circuit-in-salt-lake-city/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/racing/american-criterium-cup-aline-seitz-holds-off-skylar-schneider-while-justin-williams-earns-mens-sprint-victory-on-tight-circuit-in-salt-lake-city/" target="_blank" title="American Criterium Cup: Aline Seitz holds off Skylar Schneider while Justin Williams earns men&#39;s sprint victory on tight circuit in Salt Lake City">• American Criterium Cup: Aline Seitz holds off Skylar Schneider while Justin Williams earns men&#39;s sprint victory on tight circuit in Salt Lake City</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="&#39;The Leadville nobody knew&#39; – Revised course eliminates final &#39;gut punch&#39; of Powerline climb but Columbine and elevation keep you humble" data-link="https://www.cyclingnews.com/pro-cycling/teams-riders/the-leadville-nobody-knew-revised-course-eliminates-final-gut-punch-of-powerline-climb-but-columbine-and-elevation-keep-you-humble/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/teams-riders/the-leadville-nobody-knew-revised-course-eliminates-final-gut-punch-of-powerline-climb-but-columbine-and-elevation-keep-you-humble/" target="_blank" title="&#39;The Leadville nobody knew&#39; – Revised course eliminates final &#39;gut punch&#39; of Powerline climb but Columbine and elevation keep you humble">• &#39;The Leadville nobody knew&#39; – Revised course eliminates final &#39;gut punch&#39; of Powerline climb but Columbine and elevation keep you humble</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 11 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Leading sprinter and Classics specialist Arnaud De Lie confirms signing with Tudor until end of 2030" data-link="https://www.cyclingnews.com/pro-cycling/transfers/leading-sprinter-and-classics-specialist-arnaud-de-lie-confirms-signing-with-tudor-until-end-of-2030/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/transfers/leading-sprinter-and-classics-specialist-arnaud-de-lie-confirms-signing-with-tudor-until-end-of-2030/" target="_blank" title="Leading sprinter and Classics specialist Arnaud De Lie confirms signing with Tudor until end of 2030">• Leading sprinter and Classics specialist Arnaud De Lie confirms signing with Tudor until end of 2030</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 13 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Specialized&#39;s S-Works Recon Evo are great shoes, but they come at a great expense" data-link="https://www.cyclingnews.com/cycling-kit-accessories/clothing-shoes/specializeds-s-works-recon-evo-are-great-shoes-but-they-come-at-a-great-expense/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="Specialized">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/cycling-kit-accessories/clothing-shoes/specializeds-s-works-recon-evo-are-great-shoes-but-they-come-at-a-great-expense/" target="_blank" title="Specialized&#39;s S-Works Recon Evo are great shoes, but they come at a great expense">• Specialized&#39;s S-Works Recon Evo are great shoes, but they come at a great expense</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 14 小時前</div>
+                            
+                            
+                            <div class="brand-tags">
+                                
+                                <span class="brand-tag">Specialized</span>
+                                
+                            </div>
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Pinarello-Q36.5 sign deal with talented young American racer AJ August for 2027" data-link="https://www.cyclingnews.com/pro-cycling/transfers/pinarello-q36-5-sign-deal-with-talented-young-american-racer-aj-august-for-2027/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/transfers/pinarello-q36-5-sign-deal-with-talented-young-american-racer-aj-august-for-2027/" target="_blank" title="Pinarello-Q36.5 sign deal with talented young American racer AJ August for 2027">• Pinarello-Q36.5 sign deal with talented young American racer AJ August for 2027</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 15 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="&#39;I&#39;m certainly not done with this season yet&#39; – Demi Vollering sends warning to her rivals ahead of the World Championships" data-link="https://www.cyclingnews.com/pro-cycling/womens-cycling/im-certainly-not-done-with-this-season-yet-demi-vollering-sends-warning-to-her-rivals-ahead-of-the-world-championships/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/womens-cycling/im-certainly-not-done-with-this-season-yet-demi-vollering-sends-warning-to-her-rivals-ahead-of-the-world-championships/" target="_blank" title="&#39;I&#39;m certainly not done with this season yet&#39; – Demi Vollering sends warning to her rivals ahead of the World Championships">• &#39;I&#39;m certainly not done with this season yet&#39; – Demi Vollering sends warning to her rivals ahead of the World Championships</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 16 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="&#39;Belgians love underdogs&#39; – Wout van Aert&#39;s enduring popularity has its roots in cyclo-cross, but it&#39;s got much bigger since then, writes Thomas De Gendt" data-link="https://www.cyclingnews.com/pro-cycling/teams-riders/belgians-love-underdogs-wout-van-aerts-enduring-popularity-has-its-roots-in-cyclo-cross-but-its-got-much-bigger-since-then-writes-thomas-de-gendt/" data-source="CYCLING NEWS" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cyclingnews.com/pro-cycling/teams-riders/belgians-love-underdogs-wout-van-aerts-enduring-popularity-has-its-roots-in-cyclo-cross-but-its-got-much-bigger-since-then-writes-thomas-de-gendt/" target="_blank" title="&#39;Belgians love underdogs&#39; – Wout van Aert&#39;s enduring popularity has its roots in cyclo-cross, but it&#39;s got much bigger since then, writes Thomas De Gendt">• &#39;Belgians love underdogs&#39; – Wout van Aert&#39;s enduring popularity has its roots in cyclo-cross, but it&#39;s got much bigger since then, writes Thomas De Gendt</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 16 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        Bike Radar News
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Fund for young riders launched after Finlay Tarling’s death at Volta a Portugal" data-link="https://www.bikeradar.com/news/fund-for-young-riders-launched-after-finlay-tarlings-death-at-volta-a-portugal" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/fund-for-young-riders-launched-after-finlay-tarlings-death-at-volta-a-portugal" target="_blank" title="Fund for young riders launched after Finlay Tarling’s death at Volta a Portugal">• Fund for young riders launched after Finlay Tarling’s death at Volta a Portugal</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 12 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="The Women&#39;s Tour of Britain 2026 starts on Wednesday – here are the details for all five stages and how to watch the action" data-link="https://www.bikeradar.com/news/2026-womens-tour-of-britain-route" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/2026-womens-tour-of-britain-route" target="_blank" title="The Women&#39;s Tour of Britain 2026 starts on Wednesday – here are the details for all five stages and how to watch the action">• The Women&#39;s Tour of Britain 2026 starts on Wednesday – here are the details for all five stages and how to watch the action</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 14 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="How to watch the 2026 Vuelta a España | Global options for live streams, broadcasters and highlights" data-link="https://www.bikeradar.com/news/how-to-watch-the-vuelta-a-espana" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/how-to-watch-the-vuelta-a-espana" target="_blank" title="How to watch the 2026 Vuelta a España | Global options for live streams, broadcasters and highlights">• How to watch the 2026 Vuelta a España | Global options for live streams, broadcasters and highlights</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Merida Speeder is reborn as a flat-bar gravel bike with 50mm clearance" data-link="https://www.bikeradar.com/news/2027-merida-speeder" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="Merida">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/2027-merida-speeder" target="_blank" title="Merida Speeder is reborn as a flat-bar gravel bike with 50mm clearance">• Merida Speeder is reborn as a flat-bar gravel bike with 50mm clearance</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 天前</div>
+                            
+                            
+                            <div class="brand-tags">
+                                
+                                <span class="brand-tag">Merida</span>
+                                
+                            </div>
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="The Pikio Si Oblik is the safest cycling helmet ever tested by Virginia Tech" data-link="https://www.bikeradar.com/first-look-friday/pikio-si-oblik-helmet" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/first-look-friday/pikio-si-oblik-helmet" target="_blank" title="The Pikio Si Oblik is the safest cycling helmet ever tested by Virginia Tech">• The Pikio Si Oblik is the safest cycling helmet ever tested by Virginia Tech</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Raleigh’s parent company declared bankrupt as Irish firm eyes up acquisition" data-link="https://www.bikeradar.com/news/raleighs-parent-company-declared-bankrupt-as-irish-firm-eyes-up-acquisition" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/raleighs-parent-company-declared-bankrupt-as-irish-firm-eyes-up-acquisition" target="_blank" title="Raleigh’s parent company declared bankrupt as Irish firm eyes up acquisition">• Raleigh’s parent company declared bankrupt as Irish firm eyes up acquisition</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="“Back to the roots of endurance riding” – new Trek Domane ditches IsoSpeed and in-frame storage to save 305 grams" data-link="https://www.bikeradar.com/news/2027-trek-domane" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="Trek">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/2027-trek-domane" target="_blank" title="“Back to the roots of endurance riding” – new Trek Domane ditches IsoSpeed and in-frame storage to save 305 grams">• “Back to the roots of endurance riding” – new Trek Domane ditches IsoSpeed and in-frame storage to save 305 grams</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 天前</div>
+                            
+                            
+                            <div class="brand-tags">
+                                
+                                <span class="brand-tag">Trek</span>
+                                
+                            </div>
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Volkswagen reveals “world’s safest ebike” with smart glasses included" data-link="https://www.bikeradar.com/news/2026-volkswagen-smart-ebike" data-source="Bike Radar News" data-category="🔥 Cycling Trend" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bikeradar.com/news/2026-volkswagen-smart-ebike" target="_blank" title="Volkswagen reveals “world’s safest ebike” with smart glasses included">• Volkswagen reveals “world’s safest ebike” with smart glasses included</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+            </div>
+        </section>
+    
+        <section class="category-section">
+            <h2 class="category-title">🌏 國際商務 (中文)</h2>
+            <div class="grid">
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.cna.com.tw/" target="_blank" rel="noopener" class="source-link">中央社財經</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="權值股熄火　台股衝破46000點後急殺逾500點" data-link="https://www.cna.com.tw/news/afe/202608180047.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/afe/202608180047.aspx" target="_blank" title="權值股熄火　台股衝破46000點後急殺逾500點">• 權值股熄火　台股衝破46000點後急殺逾500點</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 55 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Anthropic增長勢頭猛　年化營收衝破650億美元" data-link="https://www.cna.com.tw/news/aopl/202608180044.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180044.aspx" target="_blank" title="Anthropic增長勢頭猛　年化營收衝破650億美元">• Anthropic增長勢頭猛　年化營收衝破650億美元</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                            <div class="also-from" title="同時也見於：經濟日報、中央社國際">🔗 另有 2 個來源同步報導</div>
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="宇瞻參加自動化展　半導體晶圓量測設備將首度亮相" data-link="https://www.cna.com.tw/news/afe/202608180040.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/afe/202608180040.aspx" target="_blank" title="宇瞻參加自動化展　半導體晶圓量測設備將首度亮相">• 宇瞻參加自動化展　半導體晶圓量測設備將首度亮相</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="副總統：盼台灣不只提供晶片　要成為AI治理先發球員" data-link="https://www.cna.com.tw/news/afe/202608180037.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/afe/202608180037.aspx" target="_blank" title="副總統：盼台灣不只提供晶片　要成為AI治理先發球員">• 副總統：盼台灣不只提供晶片　要成為AI治理先發球員</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="追憶忘年之交高希均　童子賢：照亮知識份子前行的路" data-link="https://www.cna.com.tw/news/afe/202608180030.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/afe/202608180030.aspx" target="_blank" title="追憶忘年之交高希均　童子賢：照亮知識份子前行的路">• 追憶忘年之交高希均　童子賢：照亮知識份子前行的路</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="日圓上漲伊朗戰爭雙重打擊　日汽車製造商面臨壓力" data-link="https://www.cna.com.tw/news/aopl/202608180029.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180029.aspx" target="_blank" title="日圓上漲伊朗戰爭雙重打擊　日汽車製造商面臨壓力">• 日圓上漲伊朗戰爭雙重打擊　日汽車製造商面臨壓力</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="台股開高漲逾200點　重返46000點" data-link="https://www.cna.com.tw/news/afe/202608180026.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/afe/202608180026.aspx" target="_blank" title="台股開高漲逾200點　重返46000點">• 台股開高漲逾200點　重返46000點</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="新台幣開盤升1.2分　為31.84元" data-link="https://www.cna.com.tw/news/afe/202608180024.aspx" data-source="中央社財經" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/afe/202608180024.aspx" target="_blank" title="新台幣開盤升1.2分　為31.84元">• 新台幣開盤升1.2分　為31.84元</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://money.udn.com/" target="_blank" rel="noopener" class="source-link">經濟日報</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="千葉豪雨增至13死　約2700輛泡水車成路障" data-link="https://money.udn.com/money/story/5599/9698356" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698356" target="_blank" title="千葉豪雨增至13死　約2700輛泡水車成路障">• 千葉豪雨增至13死　約2700輛泡水車成路障</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 18 分鐘前</div>
+                            
+                            
+                            
+                            <div class="also-from" title="同時也見於：中央社國際">🔗 另有 1 個來源同步報導</div>
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="菲律賓再傳校園槍擊　南部中學兩人喪生" data-link="https://money.udn.com/money/story/5599/9698351" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698351" target="_blank" title="菲律賓再傳校園槍擊　南部中學兩人喪生">• 菲律賓再傳校園槍擊　南部中學兩人喪生</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 19 分鐘前</div>
+                            
+                            
+                            
+                            <div class="also-from" title="同時也見於：中央社國際">🔗 另有 1 個來源同步報導</div>
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="川普為金正恩縮減美韓軍演？專家批：平壤沒有諾貝爾獎" data-link="https://money.udn.com/money/story/5599/9698350" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698350" target="_blank" title="川普為金正恩縮減美韓軍演？專家批：平壤沒有諾貝爾獎">• 川普為金正恩縮減美韓軍演？專家批：平壤沒有諾貝爾獎</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 19 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="美國單產預估下修、中國採購回升支撐黃豆 巴西供給充足限制漲幅" data-link="https://money.udn.com/money/story/5599/9698348" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698348" target="_blank" title="美國單產預估下修、中國採購回升支撐黃豆 巴西供給充足限制漲幅">• 美國單產預估下修、中國採購回升支撐黃豆 巴西供給充足限制漲幅</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 19 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="三因素 推高原油風險溢價" data-link="https://money.udn.com/money/story/5599/9698341" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698341" target="_blank" title="三因素 推高原油風險溢價">• 三因素 推高原油風險溢價</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 21 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="川普為何揚言炸爛阿曼？美媒：不滿盟邦沒幫忙 部分幕僚疑暗助伊朗" data-link="https://money.udn.com/money/story/5599/9698256" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698256" target="_blank" title="川普為何揚言炸爛阿曼？美媒：不滿盟邦沒幫忙 部分幕僚疑暗助伊朗">• 川普為何揚言炸爛阿曼？美媒：不滿盟邦沒幫忙 部分幕僚疑暗助伊朗</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 45 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="AI擴大台韓貿易順差 新台幣韓元在內亞幣還有續漲空間" data-link="https://money.udn.com/money/story/5599/9698254" data-source="經濟日報" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://money.udn.com/money/story/5599/9698254" target="_blank" title="AI擴大台韓貿易順差 新台幣韓元在內亞幣還有續漲空間">• AI擴大台韓貿易順差 新台幣韓元在內亞幣還有續漲空間</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 45 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.cna.com.tw/" target="_blank" rel="noopener" class="source-link">中央社國際</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="日本譴責普丁訪千島群島　俄外長回批逾越得體分際" data-link="https://www.cna.com.tw/news/aopl/202608180081.aspx" data-source="中央社國際" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180081.aspx" target="_blank" title="日本譴責普丁訪千島群島　俄外長回批逾越得體分際">• 日本譴責普丁訪千島群島　俄外長回批逾越得體分際</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 8 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="批評俄侵略烏克蘭　俄反對派施洛斯伯格遭判11年" data-link="https://www.cna.com.tw/news/aopl/202608180065.aspx" data-source="中央社國際" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180065.aspx" target="_blank" title="批評俄侵略烏克蘭　俄反對派施洛斯伯格遭判11年">• 批評俄侵略烏克蘭　俄反對派施洛斯伯格遭判11年</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 22 分鐘前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="銀髮族高溫風險遭低估　暖化牽動氣候移民挑戰" data-link="https://www.cna.com.tw/news/aopl/202608180039.aspx" data-source="中央社國際" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180039.aspx" target="_blank" title="銀髮族高溫風險遭低估　暖化牽動氣候移民挑戰">• 銀髮族高溫風險遭低估　暖化牽動氣候移民挑戰</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="哥倫比亞強震部長度假挨轟　天后夏奇拉災區送暖" data-link="https://www.cna.com.tw/news/aopl/202608180036.aspx" data-source="中央社國際" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180036.aspx" target="_blank" title="哥倫比亞強震部長度假挨轟　天后夏奇拉災區送暖">• 哥倫比亞強震部長度假挨轟　天后夏奇拉災區送暖</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="美艦班福特號南海斷電4天　空調無法用、飲食如廁出問題" data-link="https://www.cna.com.tw/news/aopl/202608180035.aspx" data-source="中央社國際" data-category="🌏 國際商務 (中文)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cna.com.tw/news/aopl/202608180035.aspx" target="_blank" title="美艦班福特號南海斷電4天　空調無法用、飲食如廁出問題">• 美艦班福特號南海斷電4天　空調無法用、飲食如廁出問題</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+            </div>
+        </section>
+    
+        <section class="category-section">
+            <h2 class="category-title">🇺🇸 English News (Global)</h2>
+            <div class="grid">
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.marketwatch.com/" target="_blank" rel="noopener" class="source-link">MarketWatch</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Why this popular Treasury-bond ETF is trading at its lowest since 2004" data-link="https://www.marketwatch.com/story/why-this-popular-treasury-bond-etf-is-trading-at-its-lowest-since-2004-27de9a77?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/why-this-popular-treasury-bond-etf-is-trading-at-its-lowest-since-2004-27de9a77?mod=mw_rss_topstories" target="_blank" title="Why this popular Treasury-bond ETF is trading at its lowest since 2004">• Why this popular Treasury-bond ETF is trading at its lowest since 2004</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 5 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="‘It’s a double-edged sword’: My husband got a $42,000 bonus. Will it wipe out our Affordable Care Act subsidy?" data-link="https://www.marketwatch.com/story/its-a-double-edged-sword-my-husband-got-a-42-000-bonus-will-it-wipe-out-our-affordable-care-act-subsidy-32db285e?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/its-a-double-edged-sword-my-husband-got-a-42-000-bonus-will-it-wipe-out-our-affordable-care-act-subsidy-32db285e?mod=mw_rss_topstories" target="_blank" title="‘It’s a double-edged sword’: My husband got a $42,000 bonus. Will it wipe out our Affordable Care Act subsidy?">• ‘It’s a double-edged sword’: My husband got a $42,000 bonus. Will it wipe out our Affordable Care Act subsidy?</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="There’s a 49% chance the Dow will finish this year up double digits. Here’s why." data-link="https://www.marketwatch.com/story/theres-a-49-chance-the-dow-will-finish-this-year-up-double-digits-heres-why-6871e569?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/theres-a-49-chance-the-dow-will-finish-this-year-up-double-digits-heres-why-6871e569?mod=mw_rss_topstories" target="_blank" title="There’s a 49% chance the Dow will finish this year up double digits. Here’s why.">• There’s a 49% chance the Dow will finish this year up double digits. Here’s why.</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="The number of ‘negative-beta’ stocks in the S&amp;P 500 just hit a new record high. What that means for investors." data-link="https://www.marketwatch.com/story/the-number-of-negative-beta-stocks-in-the-s-p-500-just-hit-a-new-record-high-what-that-means-for-investors-992ca307?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/the-number-of-negative-beta-stocks-in-the-s-p-500-just-hit-a-new-record-high-what-that-means-for-investors-992ca307?mod=mw_rss_topstories" target="_blank" title="The number of ‘negative-beta’ stocks in the S&amp;P 500 just hit a new record high. What that means for investors.">• The number of ‘negative-beta’ stocks in the S&amp;P 500 just hit a new record high. What that means for investors.</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="I’m 63, a retired CPA with a $1.2 million 401(k). Do I need to bother with a Roth conversion?" data-link="https://www.marketwatch.com/story/im-63-and-a-retired-cpa-i-have-a-1-2-million-401-k-do-i-need-a-roth-conversion-0a227302?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/im-63-and-a-retired-cpa-i-have-a-1-2-million-401-k-do-i-need-a-roth-conversion-0a227302?mod=mw_rss_topstories" target="_blank" title="I’m 63, a retired CPA with a $1.2 million 401(k). Do I need to bother with a Roth conversion?">• I’m 63, a retired CPA with a $1.2 million 401(k). Do I need to bother with a Roth conversion?</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Micron, Sandisk and other chip stocks climb as investors get more confident about AI spending" data-link="https://www.marketwatch.com/story/micron-sandisk-and-other-chip-stocks-climb-as-investors-are-more-confident-about-ai-spending-128374fa?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/micron-sandisk-and-other-chip-stocks-climb-as-investors-are-more-confident-about-ai-spending-128374fa?mod=mw_rss_topstories" target="_blank" title="Micron, Sandisk and other chip stocks climb as investors get more confident about AI spending">• Micron, Sandisk and other chip stocks climb as investors get more confident about AI spending</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 7 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="A new set of Trump tariffs for Canada could take effect Wednesday. Here’s what’s at stake." data-link="https://www.marketwatch.com/story/a-new-set-of-trump-tariffs-for-canada-could-take-effect-wednesday-heres-whats-at-stake-8aa0eeb8?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/a-new-set-of-trump-tariffs-for-canada-could-take-effect-wednesday-heres-whats-at-stake-8aa0eeb8?mod=mw_rss_topstories" target="_blank" title="A new set of Trump tariffs for Canada could take effect Wednesday. Here’s what’s at stake.">• A new set of Trump tariffs for Canada could take effect Wednesday. Here’s what’s at stake.</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 7 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="SpaceX’s stock is rising, and that’s a good sign for Nvidia and Google" data-link="https://www.marketwatch.com/story/spacexs-stock-is-rising-and-thats-a-good-sign-for-nvidia-and-google-913ce9de?mod=mw_rss_topstories" data-source="MarketWatch" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.marketwatch.com/story/spacexs-stock-is-rising-and-thats-a-good-sign-for-nvidia-and-google-913ce9de?mod=mw_rss_topstories" target="_blank" title="SpaceX’s stock is rising, and that’s a good sign for Nvidia and Google">• SpaceX’s stock is rising, and that’s a good sign for Nvidia and Google</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 7 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.theguardian.com/world" target="_blank" rel="noopener" class="source-link">The Guardian</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Ebola outbreak in Democratic Republic of the Congo now deadliest in country’s history" data-link="https://www.theguardian.com/world/2026/aug/17/ebola-outbreak-drc-democratic-republic-of-congo-deadliest-in-history" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/17/ebola-outbreak-drc-democratic-republic-of-congo-deadliest-in-history" target="_blank" title="Ebola outbreak in Democratic Republic of the Congo now deadliest in country’s history">• Ebola outbreak in Democratic Republic of the Congo now deadliest in country’s history</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 13 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Zimbabwe boat accident death toll hits 68 as 22 more bodies recovered" data-link="https://www.theguardian.com/world/2026/aug/15/more-bodies-recovered-after-zimbabwe-boat-accident" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/15/more-bodies-recovered-after-zimbabwe-boat-accident" target="_blank" title="Zimbabwe boat accident death toll hits 68 as 22 more bodies recovered">• Zimbabwe boat accident death toll hits 68 as 22 more bodies recovered</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Moroccan police arrest more than 100 people attempting to enter Ceuta" data-link="https://www.theguardian.com/world/2026/aug/15/moroccan-police-arrest-more-than-100-people-as-they-attempt-to-enter-ceuta" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/15/moroccan-police-arrest-more-than-100-people-as-they-attempt-to-enter-ceuta" target="_blank" title="Moroccan police arrest more than 100 people attempting to enter Ceuta">• Moroccan police arrest more than 100 people attempting to enter Ceuta</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="American missionary kidnapped in Niger freed after nine months" data-link="https://www.theguardian.com/world/2026/aug/14/american-missionary-kevin-rideout-niger-released-kidnapping" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/14/american-missionary-kevin-rideout-niger-released-kidnapping" target="_blank" title="American missionary kidnapped in Niger freed after nine months">• American missionary kidnapped in Niger freed after nine months</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="DRC’s fast-growing Ebola outbreak spreads to sixth province" data-link="https://www.theguardian.com/world/2026/aug/13/ebola-drc-democratic-republic-congo-sixth-province" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/13/ebola-drc-democratic-republic-congo-sixth-province" target="_blank" title="DRC’s fast-growing Ebola outbreak spreads to sixth province">• DRC’s fast-growing Ebola outbreak spreads to sixth province</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Brazil’s Lula launches historic fourth term bid – but son of jailed Bolsonaro stands in his way" data-link="https://www.theguardian.com/world/2026/aug/16/lula-brazil-president-fourth-term-jair-flavio-bolsonaro" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/16/lula-brazil-president-fourth-term-jair-flavio-bolsonaro" target="_blank" title="Brazil’s Lula launches historic fourth term bid – but son of jailed Bolsonaro stands in his way">• Brazil’s Lula launches historic fourth term bid – but son of jailed Bolsonaro stands in his way</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Ontario free to axe Toronto bike lanes, region’s top court rules" data-link="https://www.theguardian.com/world/2026/aug/14/ontario-free-to-axe-toronto-bike-lanes-regions-top-court-rules" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/14/ontario-free-to-axe-toronto-bike-lanes-regions-top-court-rules" target="_blank" title="Ontario free to axe Toronto bike lanes, region’s top court rules">• Ontario free to axe Toronto bike lanes, region’s top court rules</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Canadian plasma clinics pause collections after deaths of two donors" data-link="https://www.theguardian.com/world/2026/aug/14/canadian-plasma-clinics-pause-collections-after-deaths-of-donors-grifols" data-source="The Guardian" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.theguardian.com/world/2026/aug/14/canadian-plasma-clinics-pause-collections-after-deaths-of-donors-grifols" target="_blank" title="Canadian plasma clinics pause collections after deaths of two donors">• Canadian plasma clinics pause collections after deaths of two donors</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 天前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.nytimes.com/section/world" target="_blank" rel="noopener" class="source-link">NY Times</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Iran’s Supreme Leader Signals Intention to Keep Country on a War Footing" data-link="https://www.nytimes.com/2026/08/17/world/middleeast/iran-khamenei-military-leaders-war.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/middleeast/iran-khamenei-military-leaders-war.html" target="_blank" title="Iran’s Supreme Leader Signals Intention to Keep Country on a War Footing">• Iran’s Supreme Leader Signals Intention to Keep Country on a War Footing</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 18 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Trump’s Overture to North Korea Strains Alliance With the South" data-link="https://www.nytimes.com/2026/08/17/world/asia/trump-korea-military-kim-jong-un.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/asia/trump-korea-military-kim-jong-un.html" target="_blank" title="Trump’s Overture to North Korea Strains Alliance With the South">• Trump’s Overture to North Korea Strains Alliance With the South</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 16 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="How Ukraine’s Satellites Help Drive Its War Drones" data-link="https://www.nytimes.com/2026/08/17/world/europe/from-the-sky-to-the-battlefield.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/europe/from-the-sky-to-the-battlefield.html" target="_blank" title="How Ukraine’s Satellites Help Drive Its War Drones">• How Ukraine’s Satellites Help Drive Its War Drones</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 7 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="China Wants Its Data to Power the World’s A.I." data-link="https://www.nytimes.com/2026/08/17/world/asia/china-ai-data-chatbots.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/asia/china-ai-data-chatbots.html" target="_blank" title="China Wants Its Data to Power the World’s A.I.">• China Wants Its Data to Power the World’s A.I.</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 16 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Kushner Meets Netanyahu in Israel in Effort to Break Logjam Over Gaza" data-link="https://www.nytimes.com/2026/08/17/world/middleeast/kushner-netanyahu-gaza-peace-deal.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/middleeast/kushner-netanyahu-gaza-peace-deal.html" target="_blank" title="Kushner Meets Netanyahu in Israel in Effort to Break Logjam Over Gaza">• Kushner Meets Netanyahu in Israel in Effort to Break Logjam Over Gaza</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Barred From Ballot, a Party Becomes a Vessel for Russians’ Discontent" data-link="https://www.nytimes.com/2026/08/17/world/europe/russia-yabloko-party-election.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/europe/russia-yabloko-party-election.html" target="_blank" title="Barred From Ballot, a Party Becomes a Vessel for Russians’ Discontent">• Barred From Ballot, a Party Becomes a Vessel for Russians’ Discontent</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 8 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Andy Burnham, UK Prime Minister, Exchanged Texts With Someone Posing as Trump’s Chief of Staff" data-link="https://www.nytimes.com/2026/08/17/world/europe/andy-burnham-prime-minister-uk-fake-texts-trump.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/europe/andy-burnham-prime-minister-uk-fake-texts-trump.html" target="_blank" title="Andy Burnham, UK Prime Minister, Exchanged Texts With Someone Posing as Trump’s Chief of Staff">• Andy Burnham, UK Prime Minister, Exchanged Texts With Someone Posing as Trump’s Chief of Staff</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 15 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Houthis Claim Strike on Saudi Vessel as Red Sea Violence Escalates" data-link="https://www.nytimes.com/2026/08/17/world/middleeast/houthis-saudi-strike.html" data-source="NY Times" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.nytimes.com/2026/08/17/world/middleeast/houthis-saudi-strike.html" target="_blank" title="Houthis Claim Strike on Saudi Vessel as Red Sea Violence Escalates">• Houthis Claim Strike on Saudi Vessel as Red Sea Violence Escalates</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 12 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://edition.cnn.com/" target="_blank" rel="noopener" class="source-link">CNN Top</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Trump pleads not guilty to 34 felony counts" data-link="https://edition.cnn.com/webview/politics/live-news/trump-indictment-stormy-daniels-news-04-03-23/index.html" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://edition.cnn.com/webview/politics/live-news/trump-indictment-stormy-daniels-news-04-03-23/index.html" target="_blank" title="Trump pleads not guilty to 34 felony counts">• Trump pleads not guilty to 34 felony counts</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Haberman reveals why Trump attacked judge and his family in speech" data-link="https://www.cnn.com/videos/politics/2023/04/05/maggie-haberman-donald-trump-speech-indictment-reaction-sot-cnntm-vpx.cnn" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cnn.com/videos/politics/2023/04/05/maggie-haberman-donald-trump-speech-indictment-reaction-sot-cnntm-vpx.cnn" target="_blank" title="Haberman reveals why Trump attacked judge and his family in speech">• Haberman reveals why Trump attacked judge and his family in speech</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 年前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="What to know about the Trump indictment on the eve of his court appearance" data-link="https://www.cnn.com/collections/intl-trump-040223/" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cnn.com/collections/intl-trump-040223/" target="_blank" title="What to know about the Trump indictment on the eve of his court appearance">• What to know about the Trump indictment on the eve of his court appearance</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 年前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="READ: Trump indictment related to hush money payment" data-link="https://cnn.it/411KYN7" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://cnn.it/411KYN7" target="_blank" title="READ: Trump indictment related to hush money payment">• READ: Trump indictment related to hush money payment</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Russian authorities detain suspect over St. Petersburg cafe blast" data-link="https://edition.cnn.com/webview/europe/live-news/russia-ukraine-war-news-04-03-23/index.html" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://edition.cnn.com/webview/europe/live-news/russia-ukraine-war-news-04-03-23/index.html" target="_blank" title="Russian authorities detain suspect over St. Petersburg cafe blast">• Russian authorities detain suspect over St. Petersburg cafe blast</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Video shows moment of deadly explosion at cafe in Russia" data-link="https://www.cnn.com/videos/world/2023/04/02/russian-military-blogger-vladlen-tatarsky-killed-cafe-explosion-chance-vpx.cnn" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cnn.com/videos/world/2023/04/02/russian-military-blogger-vladlen-tatarsky-killed-cafe-explosion-chance-vpx.cnn" target="_blank" title="Video shows moment of deadly explosion at cafe in Russia">• Video shows moment of deadly explosion at cafe in Russia</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 年前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Wall Street Journal reporter Evan Gershkovich appeals against arrest, Russian state media says" data-link="https://www.cnn.com/collections/intl-ukraine-030423/" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cnn.com/collections/intl-ukraine-030423/" target="_blank" title="Wall Street Journal reporter Evan Gershkovich appeals against arrest, Russian state media says">• Wall Street Journal reporter Evan Gershkovich appeals against arrest, Russian state media says</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 年前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Suspected Chinese spy balloon was able to transmit information back to Beijing" data-link="https://www.cnn.com/2023/04/03/politics/chinese-spy-balloon/index.html" data-source="CNN Top" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.cnn.com/2023/04/03/politics/chinese-spy-balloon/index.html" target="_blank" title="Suspected Chinese spy balloon was able to transmit information back to Beijing">• Suspected Chinese spy balloon was able to transmit information back to Beijing</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 3 年前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+                <div class="card">
+                    <div class="card-header">
+                        
+                        <a href="https://www.bbc.com/news/world" target="_blank" rel="noopener" class="source-link">BBC World</a>
+                        
+                    </div>
+                    <ul class="news-list">
+                    
+                        
+                        <li class="news-item" data-title="Trump threatens to bomb US ally Oman if it &#39;gets in the way&#39; over Iran deal" data-link="https://www.bbc.co.uk/news/articles/cy5dzk0ryzdo?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/cy5dzk0ryzdo?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="Trump threatens to bomb US ally Oman if it &#39;gets in the way&#39; over Iran deal">• Trump threatens to bomb US ally Oman if it &#39;gets in the way&#39; over Iran deal</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 8 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Tupac murder trial: &#39;All hell broke loose&#39; night of rapper&#39;s shooting, witness says" data-link="https://www.bbc.co.uk/news/articles/cp3r0kz775ko?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/cp3r0kz775ko?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="Tupac murder trial: &#39;All hell broke loose&#39; night of rapper&#39;s shooting, witness says">• Tupac murder trial: &#39;All hell broke loose&#39; night of rapper&#39;s shooting, witness says</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 1 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Russia warns UK over supplying drones to Ukraine" data-link="https://www.bbc.co.uk/news/articles/cy5dz0kkn0wo?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/cy5dz0kkn0wo?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="Russia warns UK over supplying drones to Ukraine">• Russia warns UK over supplying drones to Ukraine</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 2 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="BBC breaks down Trump&#39;s latest shift on North and South Korea" data-link="https://www.bbc.co.uk/news/videos/cy45zjw424xo?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/videos/cy45zjw424xo?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="BBC breaks down Trump&#39;s latest shift on North and South Korea">• BBC breaks down Trump&#39;s latest shift on North and South Korea</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Norway&#39;s king admitted to hospital and put on sick leave" data-link="https://www.bbc.co.uk/news/articles/c4g3qdj1z77o?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/c4g3qdj1z77o?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="Norway&#39;s king admitted to hospital and put on sick leave">• Norway&#39;s king admitted to hospital and put on sick leave</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 6 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Russia&#39;s prominent anti-war politician jailed for 11 years" data-link="https://www.bbc.co.uk/news/articles/cj4kjnle2neo?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/cj4kjnle2neo?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="Russia&#39;s prominent anti-war politician jailed for 11 years">• Russia&#39;s prominent anti-war politician jailed for 11 years</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 11 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="Tributes to actress Hayden Panettiere as coroner finds &#39;no signs of trauma&#39;" data-link="https://www.bbc.co.uk/news/articles/cq5665zgg1po?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/cq5665zgg1po?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="Tributes to actress Hayden Panettiere as coroner finds &#39;no signs of trauma&#39;">• Tributes to actress Hayden Panettiere as coroner finds &#39;no signs of trauma&#39;</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 4 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                        <li class="news-item" data-title="French PM heckled over wildfire response as blazes continue across Europe" data-link="https://www.bbc.co.uk/news/articles/cx2rzx5g5yro?at_medium=RSS&amp;at_campaign=rss" data-source="BBC World" data-category="🇺🇸 English News (Global)" data-brands="">
+                            <div class="news-item-row">
+                                <a href="https://www.bbc.co.uk/news/articles/cx2rzx5g5yro?at_medium=RSS&amp;at_campaign=rss" target="_blank" title="French PM heckled over wildfire response as blazes continue across Europe">• French PM heckled over wildfire response as blazes continue across Europe</a>
+                                <button class="save-btn" onclick="toggleSave(this)" title="加入收藏">☆</button>
+                            </div>
+                            
+                            <div class="pub-time">🕐 9 小時前</div>
+                            
+                            
+                            
+                        </li>
+                        
+                    
+                    </ul>
+                </div>
+            
+            </div>
+        </section>
+    
+    </main>
+
+    <footer>
+        <p>Generated by Python Automation Script</p>
+    </footer>
+
+    <script>
+        const STORAGE_KEY = 'newsDashboard_savedNews';
+
+        function getSavedNews() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setSavedNews(arr) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        }
+
+        function isNewsSaved(link) {
+            return getSavedNews().some(n => n.link === link);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        function toggleSave(btn) {
+            const li = btn.closest('.news-item');
+            const link = li.dataset.link;
+            const title = li.dataset.title;
+            const source = li.dataset.source;
+            const category = li.dataset.category;
+
+            let saved = getSavedNews();
+            const idx = saved.findIndex(n => n.link === link);
+
+            if (idx >= 0) {
+                saved.splice(idx, 1);
+                btn.textContent = '☆';
+                btn.classList.remove('saved');
+            } else {
+                saved.unshift({
+                    title: title,
+                    link: link,
+                    source: source,
+                    category: category,
+                    savedAt: new Date().toISOString()
+                });
+                btn.textContent = '★';
+                btn.classList.add('saved');
+            }
+
+            setSavedNews(saved);
+            renderSidebar();
+        }
+
+        function removeSaved(index) {
+            let saved = getSavedNews();
+            const removed = saved.splice(index, 1)[0];
+            setSavedNews(saved);
+            renderSidebar();
+
+            if (removed) {
+                document.querySelectorAll('.news-item').forEach(li => {
+                    if (li.dataset.link === removed.link) {
+                        const btn = li.querySelector('.save-btn');
+                        btn.textContent = '☆';
+                        btn.classList.remove('saved');
+                    }
+                });
+            }
+        }
+
+        function renderSidebar() {
+            const saved = getSavedNews();
+            const container = document.getElementById('savedList');
+            const badge = document.getElementById('savedCountBadge');
+            badge.textContent = saved.length;
+
+            if (saved.length === 0) {
+                container.innerHTML = '<p class="empty-hint">尚未儲存任何新聞<br>點擊新聞旁的 ☆ 即可收藏</p>';
+                return;
+            }
+
+            container.innerHTML = saved.map((n, i) => `
+                <div class="saved-item">
+                    <div class="saved-item-meta">${escapeHtml(n.source)} · ${escapeHtml(n.category)}</div>
+                    <a href="${n.link}" target="_blank" class="saved-item-title">${escapeHtml(n.title)}</a>
+                    <button class="remove-btn" onclick="removeSaved(${i})">移除</button>
+                </div>
+            `).join('');
+        }
+
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-open');
+        }
+
+        function filterByBrand(brand) {
+            document.querySelectorAll('.brand-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.brand === brand);
+            });
+
+            document.querySelectorAll('.card').forEach(card => {
+                let visibleCount = 0;
+
+                card.querySelectorAll('.news-item').forEach(li => {
+                    const brands = (li.dataset.brands || '').split(',').filter(Boolean);
+                    const show = (brand === 'all') || brands.includes(brand);
+                    li.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                });
+
+                const errorLi = card.querySelector('.error-tag');
+                if (errorLi) {
+                    errorLi.style.display = (brand === 'all') ? '' : 'none';
+                }
+
+                const cardHasContent = visibleCount > 0 || (errorLi && brand === 'all');
+                card.style.display = cardHasContent ? '' : 'none';
+            });
+
+            document.querySelectorAll('.category-section').forEach(section => {
+                const visibleCards = Array.from(section.querySelectorAll('.card'))
+                    .filter(c => c.style.display !== 'none');
+                section.style.display = visibleCards.length > 0 ? '' : 'none';
+            });
+        }
+
+        function exportSaved() {
+            const saved = getSavedNews();
+            const blob = new Blob([JSON.stringify(saved, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'saved_news_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.news-item').forEach(li => {
+                const link = li.dataset.link;
+                const btn = li.querySelector('.save-btn');
+                if (isNewsSaved(link)) {
+                    btn.textContent = '★';
+                    btn.classList.add('saved');
+                }
+            });
+            renderSidebar();
+        });
+    </script>
+
+</body>
+</html>
